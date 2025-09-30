@@ -7,6 +7,7 @@ class Player(CircleShape):
     LINE_WIDTH = 2
 
     def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
 
@@ -21,8 +22,6 @@ class Player(CircleShape):
 
     def draw(self, screen):
         pygame.draw.polygon(screen, "white", self.triangle(), Player.LINE_WIDTH)
-        # sub-classes must override
-        pass
 
     def update(self, dt):
         keys = pygame.key.get_pressed()
