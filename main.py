@@ -30,6 +30,8 @@ def main():
         for obj in updatable:
             obj.update(dt)
         for asteroid in asteroids:
+            if asteroid.check_collisions(player):
+                running = False
             asteroid.update(dt)
 
         screen.fill("black")
@@ -39,7 +41,9 @@ def main():
 
         dt = clock.tick(60) / 1000
 
+    print("Game Over!")
     pygame.quit()
+
 
 
 if __name__ == "__main__":
