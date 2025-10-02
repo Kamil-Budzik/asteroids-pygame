@@ -76,9 +76,11 @@ class Game:
     def handle_bullet_asteroid_collision(self):
         self.to_remove_asteroids = []
         self.to_remove_shots = []
-        for asteroid in self.asteroids:
-            for bullet in self.shots:
+        for asteroid in self.asteroids[:]:
+            for bullet in self.shots[:]:
                 if asteroid.check_collisions(bullet):
+                    new_asteroids = asteroid.split() 
+                    self.asteroids.extend(new_asteroids)
                     self.to_remove_asteroids.append(asteroid)
                     self.to_remove_shots.append(bullet)
 
