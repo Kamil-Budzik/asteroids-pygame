@@ -31,10 +31,29 @@ def main():
 
         for obj in updatable:
             obj.update(dt)
+
+        
+        to_remove_asteroids = []
+        to_remove_shots = []
+
         for asteroid in asteroids:
             if asteroid.check_collisions(player):
                 running = False
             asteroid.update(dt)
+            
+            for bullet in shots:
+                if asteroid.check_collisions(bullet):
+                    to_remove_shots.append(bullet)
+                    to_remove_asteroids.append(asteroid)
+
+
+        for asteroid in to_remove_asteroids:
+            if asteroid in asteroids:
+                asteroids.remove(asteroid)
+
+        for bullet in to_remove_shots:
+            if bullet in shots:
+                shots.remove(bullet)
 
         for shot in shots:
             shot.update(dt)
