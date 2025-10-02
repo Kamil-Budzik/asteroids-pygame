@@ -3,72 +3,105 @@ from constants import *
 from player import Player
 from asteroidfield import AsteroidField
 
-def main():
-    pygame.init()
 
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    clock = pygame.time.Clock()
-    dt = 0
+class Game:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.clock = pygame.time.Clock()
+        self.dt = 0
 
-    updatable = []
-    drawable = []
+        # game objects
+        self.asteroids = []
+        self.shots = []
+        self.updatable = []
+        self.drawable = []
 
+        # asteroid spawner
+        self.asteroid_field = AsteroidField(self.asteroids)
+        self.updatable.append(self.asteroid_field)
 
-    asteroids = []
-    asteroid_field = AsteroidField(asteroids)
-    updatable.append(asteroid_field)
+        # player
+        self.player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, self.shots)
+        self.updatable.append(self.player)
+        self.drawable.append(self.player)
 
-    shots = []
-    player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, shots)
-    updatable.append(player)
-    drawable.append(player)
+        self.running = True
 
-    running = True
-    while running:
+    def run(self):
+        while self.running:
+            self.handle_events()
+            self.update_objects()
+            self.handle_collisions()
+            self.draw()
+            self.dt = self.clock.tick(60) / 1000
+
+        print("Game Over!")
+        pygame.quit()
+
+    # --------------------
+    # 🔹 Event handling
+    # --------------------
+    def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                self.running = False
 
-        for obj in updatable:
-            obj.update(dt)
+    # --------------------
+    # 🔹 Updates
+    # --------------------
+    def update_objects(self):
+        for obj in self.updatable:
+            obj.update(self.dt)
 
-        
-        to_remove_asteroids = []
-        to_remove_shots = []
+        for asteroid in self.asteroids:
+            asteroid.update(self.dt)
 
-        for asteroid in asteroids:
-            if asteroid.check_collisions(player):
-                running = False
-            asteroid.update(dt)
-            
-            for bullet in shots:
+        for shot in self.shots:
+            shot.update(self.dt)
+
+    # --------------------
+    # 🔹 Collisions
+    # --------------------
+    def handle_collisions(self):
+        self.handle_player_collision()
+        self.handle_bullet_asteroid_collision()
+        self.cleanup_objects()
+
+    def handle_player_collision(self):
+        for asteroid in self.asteroids:
+            if asteroid.check_collisions(self.player):
+                self.running = False
+
+    def handle_bullet_asteroid_collision(self):
+        self.to_remove_asteroids = []
+        self.to_remove_shots = []
+        for asteroid in self.asteroids:
+            for bullet in self.shots:
                 if asteroid.check_collisions(bullet):
-                    to_remove_shots.append(bullet)
-                    to_remove_asteroids.append(asteroid)
+                    self.to_remove_asteroids.append(asteroid)
+                    self.to_remove_shots.append(bullet)
 
+    def cleanup_objects(self):
+        for asteroid in self.to_remove_asteroids:
+            if asteroid in self.asteroids:
+                self.asteroids.remove(asteroid)
+        for bullet in self.to_remove_shots:
+            if bullet in self.shots:
+                self.shots.remove(bullet)
 
-        for asteroid in to_remove_asteroids:
-            if asteroid in asteroids:
-                asteroids.remove(asteroid)
-
-        for bullet in to_remove_shots:
-            if bullet in shots:
-                shots.remove(bullet)
-
-        for shot in shots:
-            shot.update(dt)
-
-        screen.fill("black")
-
-        for obj in [player] + asteroids + shots:
-            obj.draw(screen)
+    # --------------------
+    # 🔹 Drawing
+    # --------------------
+    def draw(self):
+        self.screen.fill("black")
+        for obj in [self.player] + self.asteroids + self.shots:
+            obj.draw(self.screen)
         pygame.display.flip()
 
-        dt = clock.tick(60) / 1000
 
-    print("Game Over!")
-    pygame.quit()
-
+def main():
+    Game().run()
 
 
 if __name__ == "__main__":
